@@ -7,6 +7,9 @@ var server = express();
 //mientras este corriendo el server guardara los mensajes
 var messages = [];
 
+//ALMACENAMOS LOS RESPONSES
+var responses = [];
+
 
 //GET RESPONDE PETICIONES URL
 server.get("/", function (req, res){
@@ -21,17 +24,23 @@ server.get("/messages/:message", function (req, res) {
 	//ALMACENAMOS EN UNA VARIABLE JAVASCRIPT
 	messages.push(req.params.message);
 
+	//ENVIAMOS LOS RESPONSES ALMACENADOS
+	//ejecutaran las paginas que esten haciendo el llamado
+	responses.forEach(function(res){
+		res.send( messages + "<script>window.location.reload();</script>" );
+	});
+
 	//respondemos al browser
 	res.send("tu mensaje es " + req.params.message);
+
+
 });
 
 server.get("/messages",function (req, res){
-	
-	//AGREGAMOS RECARGA CADA SEGUNDO
-	var recarga = "<script>setTimeout(function(){window.location.reload()},1000);</script>";
-	
-	res.send(messages + recarga);
-	
+
+	//TAMBIEN PODEMOS ALMACENAR LOS RESPONSES Y
+	//MANDARLOS CUANDO QUERAMOS
+	responses.push(res);	
 });
 
 
