@@ -1,68 +1,56 @@
-//----------------------------------------------------
-//USAMOS SUPERVISOR PARA CORREGIR Y REACTUALIZAR EL 
-//SERVIDOR EN TIEMPO REAL
-//npm install supervisor -g 
-//supervisor server.js
-//TAMBIEN INSTALAR 
-// NODE-INSPECTOR :: 
-// FOREVER :: PARA PRODUCCION
+//INSTALAMOS 2 LIBRERIES 
+//EXPRESS.IO  :: PARA HACER TIEMPO REAL :: UNION EXPRESS AND SOCKET.IO
+//SWIG :: templates
+//CONECT REDIS :: MANEJAR SISTEMAS DE CACHE :: CONNECT-REDIS
 
-//usar forever con node-inspector
-// which node-inspector :: /usr/local/bin/node-inspector
-//forever <ruta de node-inspector>
-//forever /usr/local/bin/node-inspector --web-port=9999
-//supervisor --debug server.js 
-
-//----------------------------------------------------
+var express = require("express"),
+	swig = require("swig");
 
 
-//INICIANDO UN SERVIDOR CON EXPRESS()
-var express = require("express"); // tipo import de python
 var server = express();
 
+//CONFIGURACION PARA RENDEREAR VISTAS
+//CONFIGURAMOS EL MOTOR CON HTML Y SWIG
+server.engine("html",swig.renderFile);
+//AHORA DECIMOS TIPO ES EL MOTOR DE HTML: EN ESTE CASO ES VIEW ENGINE
+server.set("view engine","html");
+//DONDE VAN A ESTAR MIS VISTAS
+server.set("views","./app/views");
 
-//VARIABLE ALMACENADORA DE MENSAJES
-//mientras este corriendo el server guardara los mensajes
-var messages = [];
 
-//ALMACENAMOS LOS RESPONSES
-var responses = [];
+//EMPEZAMOS LA CONFIGURACION DE SERVER
+// para que acepte post, cookies, sessiones
+server.configure(function(){
+	server.use(express.logger()); //PARA SABER LO QUE ESTA PASANDO EN NUESTRO SERVER
+	server.use(express.cookieParser());
+	
+	//bodyParser genera una variable body dentro de req. :: req.body (object)
+	//PARA RECIBIR LA INFO QUE LLEGE A NUESTRO SERVER
+	server.use(express.bodyParser()); 
 
-
-//GET RESPONDE PETICIONES URL
-server.get("/", function (req, res){
-	//debugger; 
-	res.send("hola mundo");
-}); //fin home
-
-//RECIVE MENSAJES
-server.get("/messages/:message", function (req, res) {
-	//PARAMS TIENE LAS VARIABLES DE LA URL
-
-	//ALMACENAMOS EN UNA VARIABLE JAVASCRIPT
-	messages.push(req.params.message);
-
-	//ENVIAMOS LOS RESPONSES ALMACENADOS
-	//ejecutaran las paginas que esten haciendo el llamado
-	responses.forEach(function(res){
-		res.send( messages + "<script>window.location.reload();</script>" );
-	});
-
-	//respondemos al browser
-	res.send("tu mensaje es " + req.params.message);
+	//CREAMOS SESIONES CON REDIS
 
 
 });
 
-server.get("/messages",function (req, res){
 
-	//TAMBIEN PODEMOS ALMACENAR LOS RESPONSES Y
-	//MANDARLOS CUANDO QUERAMOS
-	responses.push(res);	
+//MOSTAR VISTAS
+server.get("/",function (req, res){
+	res.render("home");
 });
 
 
-//EN CONSOLA NODE SERVER.JS
+//VIEWS DE UN POST
+server.post("/log-in",function (req,res){
+	//POR DEFFECTO EL POST NO RETORNA LOS VALORES ENVIADOS DE UN FORM
+	//PARA PODER RECIBIRLOS HAQY QUE CONFIGURAR EL SERVIDOR
+	// server.configure
+
+	res.render("quien eres?");
+});
+
+
+
+
+
 server.listen(3000);
-
-
