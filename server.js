@@ -6,6 +6,10 @@
 var express = require("express"),
 	swig = require("swig");
 
+//coneccion a redis
+//JUNTAMOS CON EXPRESS
+var RedisStore = require("connect-redis")(express);
+
 
 var server = express();
 
@@ -28,15 +32,27 @@ server.configure(function(){
 	//PARA RECIBIR LA INFO QUE LLEGE A NUESTRO SERVER
 	server.use(express.bodyParser()); 
 
-	//CREAMOS SESIONES CON REDIS
+	//CREAMOS SESIONES CON REDIS EN EL SERVER
+	server.use(express.session({
+		secret:"lueimg",
+		store: new RedisStore({})
+	 // store: new RedisStore({host: '',port:"",user:"",pass:"" });
+	}));
 
 
-});
+}); //fin server.configures
 
-
+ 
 //MOSTAR VISTAS
 server.get("/",function (req, res){
 	res.render("home");
+});
+
+//redireccion de log-in
+server.get("/app",function (req, res){
+
+	//DEVOLVER LA VSTA app.html y le pasamos valores
+	res.render("app", {user:req.session.user} );
 });
 
 
@@ -45,8 +61,15 @@ server.post("/log-in",function (req,res){
 	//POR DEFFECTO EL POST NO RETORNA LOS VALORES ENVIADOS DE UN FORM
 	//PARA PODER RECIBIRLOS HAQY QUE CONFIGURAR EL SERVIDOR
 	// server.configure
+	//res.render("quien eres?");
 
-	res.render("quien eres?");
+	//LUEGO DE CONFIGURAR REDIS Y SERVER.CONFIG
+	req.session.user = req.body.username;
+
+	//LOS REDIRECCION SON GET
+	res.redirect("app");
+
+
 });
 
 
