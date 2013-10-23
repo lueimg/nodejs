@@ -1,3 +1,21 @@
+//----------------------------------------------------
+//USAMOS SUPERVISOR PARA CORREGIR Y REACTUALIZAR EL 
+//SERVIDOR EN TIEMPO REAL
+//npm install supervisor -g 
+//supervisor server.js
+//TAMBIEN INSTALAR 
+// NODE-INSPECTOR :: 
+// FOREVER :: PARA PRODUCCION
+
+//usar forever con node-inspector
+// which node-inspector :: /usr/local/bin/node-inspector
+//forever <ruta de node-inspector>
+//forever /usr/local/bin/node-inspector --web-port=9999
+//supervisor --debug server.js 
+
+//----------------------------------------------------
+
+
 //INICIANDO UN SERVIDOR CON EXPRESS()
 var express = require("express"); // tipo import de python
 var server = express();
@@ -13,7 +31,7 @@ var responses = [];
 
 //GET RESPONDE PETICIONES URL
 server.get("/", function (req, res){
-
+	//debugger; 
 	res.send("hola mundo");
 }); //fin home
 
@@ -46,3 +64,5 @@ server.get("/messages",function (req, res){
 
 //EN CONSOLA NODE SERVER.JS
 server.listen(3000);
+
+
