@@ -42,14 +42,40 @@ server.configure(function(){
 
 }); //fin server.configures
 
+
+//MIDDLEWARES  :: se crean antes que todo
+//-- PARA IMPLEMENTARLOS SOLO SE PONE ANTES DE LA FUNCION NORMAL
+//PERMITE HACER VERIFICACIONES DE INGRESO
+var instLoggedIn = function(req, res, next){
+	
+	if(!req.session.user){
+		res.redirect("/");
+		return; // TERMINA PARA QUE YA NO SE EJECUTE NADA MAS 
+	}
+
+	//NEXT PERMITE EJECUTAR LA SIGUIENTE FUNCION
+	next();
+};
+
+var inLoggedIn = function(req, res, next){
+	
+	if(req.session.user){
+		res.redirect("/app");
+		return; 
+	}
+
+	next();
+};
+
+
  
 //MOSTAR VISTAS
-server.get("/",function (req, res){
+server.get("/",inLoggedIn, function (req, res){
 	res.render("home");
 });
 
 //redireccion de log-in
-server.get("/app",function (req, res){
+server.get("/app", instLoggedIn, function (req, res){
 
 	//DEVOLVER LA VSTA app.html y le pasamos valores
 	res.render("app", {user:req.session.user} );
@@ -76,4 +102,6 @@ server.post("/log-in",function (req,res){
 
 
 
+
+//Lanzar servidor
 server.listen(3000);
