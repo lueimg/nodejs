@@ -5,6 +5,7 @@
     "express": "~3.4.2",
     "express.io": "~1.1.13",
     "swig": "~1.1.0",
-    "connect-redis": "~1.4.5"
+    "connect-redis": "~1.4.5",
+    "underscore": "~1.5.2"
   }
 }

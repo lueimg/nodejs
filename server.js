@@ -4,7 +4,8 @@
 //CONECT REDIS :: MANEJAR SISTEMAS DE CACHE :: CONNECT-REDIS
 
 var express = require("express"),
-	swig = require("swig");
+	swig = require("swig"),
+	_ = require("underscore");
 
 //coneccion a redis
 //JUNTAMOS CON EXPRESS
@@ -12,6 +13,11 @@ var RedisStore = require("connect-redis")(express);
 
 
 var server = express();
+
+//GUARDAREMOS LOS USUARIOS LOGEADOS
+var users = [];
+
+
 
 //CONFIGURACION PARA RENDEREAR VISTAS
 //CONFIGURAMOS EL MOTOR CON HTML Y SWIG
@@ -78,7 +84,10 @@ server.get("/",inLoggedIn, function (req, res){
 server.get("/app", instLoggedIn, function (req, res){
 
 	//DEVOLVER LA VSTA app.html y le pasamos valores
-	res.render("app", {user:req.session.user} );
+	res.render("app", {
+					user:req.session.user,
+					users: users
+			} );
 });
 
 
@@ -92,6 +101,10 @@ server.post("/log-in",function (req,res){
 	//LUEGO DE CONFIGURAR REDIS Y SERVER.CONFIG
 	req.session.user = req.body.username;
 
+	//guardamos los usuarios que se logean
+	users.push(req.body.username);
+
+
 	//LOS REDIRECCION SON GET
 	res.redirect("app");
 
@@ -99,7 +112,14 @@ server.post("/log-in",function (req,res){
 });
 
 
+server.get("/log-out",function (req,res){
+	//quitamos el usuario del listado con uderscore
+	users = _.without(users, req.session.user);
 
+	//destruimos la session
+	req.session.destroy();
+	res.redirect("/");
+});
 
 
 
