@@ -3,7 +3,7 @@
 //SWIG :: templates
 //CONECT REDIS :: MANEJAR SISTEMAS DE CACHE :: CONNECT-REDIS
 
-var express = require("express"),
+var express = require("express.io"),
 	swig = require("swig"),
 	_ = require("underscore");
 
@@ -13,6 +13,9 @@ var RedisStore = require("connect-redis")(express);
 
 
 var server = express();
+//corremos express con socket.io juntos, por el mismo puerto , al mismo tiempo
+server.http().io();
+//- /socket.io/socket.io.js
 
 //GUARDAREMOS LOS USUARIOS LOGEADOS
 var users = [];
@@ -26,6 +29,10 @@ server.engine("html",swig.renderFile);
 server.set("view engine","html");
 //DONDE VAN A ESTAR MIS VISTAS
 server.set("views","./app/views");
+
+//PARA CARGAR ARCHIVOS ESTATICOS (JS, CSS)
+server.use(express.static("./public"));
+
 
 
 //EMPEZAMOS LA CONFIGURACION DE SERVER
@@ -104,6 +111,11 @@ server.post("/log-in",function (req,res){
 	//guardamos los usuarios que se logean
 	users.push(req.body.username);
 
+	//emitimos por broadcast ::para mandarlo atodos los usuarios
+	//io.emit :: un solo usuario
+	//rooms :: 
+	server.io.broadcast("log-in",{username:req.body.username})
+
 
 	//LOS REDIRECCION SON GET
 	res.redirect("app");
@@ -116,10 +128,25 @@ server.get("/log-out",function (req,res){
 	//quitamos el usuario del listado con uderscore
 	users = _.without(users, req.session.user);
 
+	//emitimos a todos un delosgeo
+	server.io.broadcast("log-out",{username:req.session.user})
+
+
 	//destruimos la session
 	req.session.destroy();
 	res.redirect("/");
 });
+
+
+//RECIBIENDO MENSAJES DE SOCKET
+server.io.route("hola?",function(req){
+	//debugger;
+	//mandarle algo al usuario
+	req.io.emit("saludo",{
+		message:"Servidor Listo"
+	});
+});
+
 
 
 
