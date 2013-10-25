@@ -56,86 +56,16 @@ server.configure(function(){
 }); //fin server.configures
 
 
-//MIDDLEWARES  :: se crean antes que todo
-//-- PARA IMPLEMENTARLOS SOLO SE PONE ANTES DE LA FUNCION NORMAL
-//PERMITE HACER VERIFICACIONES DE INGRESO
-var instLoggedIn = function(req, res, next){
-	
-	if(!req.session.user){
-		res.redirect("/");
-		return; // TERMINA PARA QUE YA NO SE EJECUTE NADA MAS 
-	}
+//AGREGAMOS LOS CONTROLES
+//TENEMOS QUE ESCRIBIR LA RUTA DE CARPETAS
+var homeController = require("./app/controllers/home");
+//INICAMOS EL MODULO y le pasamos la conf de server
+homeController(server,users);
 
-	//NEXT PERMITE EJECUTAR LA SIGUIENTE FUNCION
-	next();
-};
-
-var inLoggedIn = function(req, res, next){
-	
-	if(req.session.user){
-		res.redirect("/app");
-		return; 
-	}
-
-	next();
-};
+var addController = require("./app/controllers/app");
+addController(server,users);
 
 
- 
-//MOSTAR VISTAS
-server.get("/",inLoggedIn, function (req, res){
-	res.render("home");
-});
-
-//redireccion de log-in
-server.get("/app", instLoggedIn, function (req, res){
-
-	//DEVOLVER LA VSTA app.html y le pasamos valores
-	res.render("app", {
-					user:req.session.user,
-					users: users
-			} );
-});
-
-
-//VIEWS DE UN POST
-server.post("/log-in",function (req,res){
-	//POR DEFFECTO EL POST NO RETORNA LOS VALORES ENVIADOS DE UN FORM
-	//PARA PODER RECIBIRLOS HAQY QUE CONFIGURAR EL SERVIDOR
-	// server.configure
-	//res.render("quien eres?");
-
-	//LUEGO DE CONFIGURAR REDIS Y SERVER.CONFIG
-	req.session.user = req.body.username;
-
-	//guardamos los usuarios que se logean
-	users.push(req.body.username);
-
-	//emitimos por broadcast ::para mandarlo atodos los usuarios
-	//io.emit :: un solo usuario
-	//rooms :: 
-	server.io.broadcast("log-in",{username:req.body.username})
-
-
-	//LOS REDIRECCION SON GET
-	res.redirect("app");
-
-
-});
-
-
-server.get("/log-out",function (req,res){
-	//quitamos el usuario del listado con uderscore
-	users = _.without(users, req.session.user);
-
-	//emitimos a todos un delosgeo
-	server.io.broadcast("log-out",{username:req.session.user})
-
-
-	//destruimos la session
-	req.session.destroy();
-	res.redirect("/");
-});
 
 
 //RECIBIENDO MENSAJES DE SOCKET
